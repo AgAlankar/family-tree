@@ -1,14 +1,86 @@
 let familyData = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-  fetch("data/family.json")
-    .then((resp) => resp.json())
-    .then((data) => {
-      familyData = data;
-      renderTree(data);
+  fetch("data/family.csv")
+    .then((resp) => resp.text())
+    .then((csvText) => {
+      familyData = parseCSV(csvText);
+      renderTree(familyData);
     })
     .catch((err) => console.error("Error loading family data:", err));
 });
+
+function parseCSV(csvText) {
+  const lines = csvText.trim().split('\n');
+  const headers = lines[0].split(',');
+  const data = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim()) continue;
+    
+    const values = parseCSVLine(line);
+    const person = {};
+    
+    headers.forEach((header, index) => {
+      const value = values[index] || '';
+      const key = header.trim();
+      
+      // Handle different data types
+      switch(key) {
+        case 'id':
+        case 'firstName':
+        case 'lastName':
+        case 'dob':
+        case 'dod':
+        case 'sex':
+        case 'picture':
+        case 'notes':
+          person[key] = value || null;
+          break;
+        case 'married':
+          person[key] = value.toLowerCase() === 'true';
+          break;
+        case 'spouse':
+          person[key] = value || null;
+          break;
+        case 'children':
+        case 'parents':
+          // Parse pipe-separated values into array
+          person[key] = value ? value.split('|').map(v => v.trim()).filter(v => v) : [];
+          break;
+        default:
+          person[key] = value;
+      }
+    });
+    
+    data.push(person);
+  }
+  
+  return data;
+}
+
+function parseCSVLine(line) {
+  const values = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      values.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  values.push(current.trim());
+  return values;
+}
 
 function renderTree(data) {
   const width = document.getElementById("tree-container").clientWidth;
@@ -39,6 +111,7 @@ function renderTree(data) {
   const CARD_WIDTH = 170; // Width of person card
   const CARD_HEIGHT = 250; // Height of person card
   const PHOTO_HEIGHT = 160; // Height of photo area
+  const CHILD_CONNECTOR_HEIGHT = 30; // Height of the vertical connector above children from horizontal line
   
   // Helper: Get generation level (0 = oldest generation)
   function getGenerationLevel(person, memo = {}) {
@@ -491,17 +564,19 @@ function renderTree(data) {
         
         // Vertical line from center down to children level
         const centerX = (pos1.x + pos2.x) / 2;
-        links.push({ x1: centerX, y1: midY, x2: centerX, y2: childTopY });
+        const horizontalLineY = childTopY - CHILD_CONNECTOR_HEIGHT;
+        links.push({ x1: centerX, y1: midY, x2: centerX, y2: horizontalLineY });
         
-        // Horizontal line across children if multiple
-        if (positionedChildren.length > 1) {
-          const leftX = Math.min(...positionedChildren.map(p => p.x));
-          const rightX = Math.max(...positionedChildren.map(p => p.x));
-          links.push({ x1: leftX, y1: childTopY, x2: rightX, y2: childTopY });
-        }
+        // Horizontal line across children
+        const leftX = Math.min(...positionedChildren.map(p => p.x));
+        const rightX = Math.max(...positionedChildren.map(p => p.x));
+        links.push({ x1: leftX, y1: horizontalLineY, x2: rightX, y2: horizontalLineY });
         
-        // Vertical lines to each child
+        // Vertical connector stubs from horizontal line to each child
         positionedChildren.forEach(childPos => {
+          // Small vertical stub from horizontal line
+          links.push({ x1: childPos.x, y1: horizontalLineY, x2: childPos.x, y2: childTopY });
+          // Line from stub to child card
           links.push({ x1: childPos.x, y1: childTopY, x2: childPos.x, y2: childPos.y - CARD_HEIGHT / 2 });
         });
       } else if (couple.person2.id === person.id || processedCoupleLinks.has(coupleKey)) {
@@ -527,27 +602,23 @@ function renderTree(data) {
   
   function drawSingleParentLinks(parentPos, positionedChildren, childTopY) {
     const parentBottomY = parentPos.y + CARD_HEIGHT / 2;
+    const horizontalLineY = childTopY - CHILD_CONNECTOR_HEIGHT;
     
-    if (positionedChildren.length === 1) {
-      // Single child - direct line
-      links.push({ 
-        x1: parentPos.x, 
-        y1: parentBottomY, 
-        x2: positionedChildren[0].x, 
-        y2: positionedChildren[0].y - CARD_HEIGHT / 2 
-      });
-    } else {
-      // Multiple children - T-shaped
-      links.push({ x1: parentPos.x, y1: parentBottomY, x2: parentPos.x, y2: childTopY });
-      
-      const leftX = Math.min(...positionedChildren.map(p => p.x));
-      const rightX = Math.max(...positionedChildren.map(p => p.x));
-      links.push({ x1: leftX, y1: childTopY, x2: rightX, y2: childTopY });
-      
-      positionedChildren.forEach(childPos => {
-        links.push({ x1: childPos.x, y1: childTopY, x2: childPos.x, y2: childPos.y - CARD_HEIGHT / 2 });
-      });
-    }
+    // Vertical line from parent down to horizontal line level
+    links.push({ x1: parentPos.x, y1: parentBottomY, x2: parentPos.x, y2: horizontalLineY });
+    
+    // Horizontal line across all children
+    const leftX = Math.min(...positionedChildren.map(p => p.x));
+    const rightX = Math.max(...positionedChildren.map(p => p.x));
+    links.push({ x1: leftX, y1: horizontalLineY, x2: rightX, y2: horizontalLineY });
+    
+    // Vertical connector stubs from horizontal line to each child
+    positionedChildren.forEach(childPos => {
+      // Small vertical stub from horizontal line
+      links.push({ x1: childPos.x, y1: horizontalLineY, x2: childPos.x, y2: childTopY });
+      // Line from stub to child card
+      links.push({ x1: childPos.x, y1: childTopY, x2: childPos.x, y2: childPos.y - CARD_HEIGHT / 2 });
+    });
   }
   
   // Create all links starting from root couples

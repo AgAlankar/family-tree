@@ -1,0 +1,17 @@
+id,firstName,lastName,dob,dod,sex,married,spouse,children,parents,picture,notes
+p1,Alankar,Agarwal,2002-06-05,,M,false,,,"p2|p3",images/alankar.jpg,Creator of the family tree.
+p2,Nupur,Agrawal,1974-01-24,,F,true,p3,"p4|p1","p7|p8",images/nupur.jpg,Mother of the family.
+p3,Vishal,Agarwal,1973-01-17,,M,true,p2,"p4|p1","p5|p6",images/vishal.jpg,Father of the family.
+p4,Smriti,Agarwal,2002-05-06,,F,false,,,"p2|p3",images/smriti.jpg,Daughter of the family.
+p5,Paternal,Grandfather,1948-03-15,,M,true,p6,"p9|p10|p11|p12|p3",,images/paternal-grandfather.jpg,Vishal's father.
+p6,Paternal,Grandmother,1950-07-22,,F,true,p5,"p9|p10|p11|p12|p3",,images/paternal-grandmother.jpg,Vishal's mother.
+p7,Maternal,Grandfather,1949-11-08,,M,true,p8,"p2|p13",,images/maternal-grandfather.jpg,Nupur's father.
+p8,Maternal,Grandmother,1951-05-30,,F,true,p7,"p2|p13",,images/maternal-grandmother.jpg,Nupur's mother.
+p9,Uncle,Agarwal,1965-02-10,,M,false,,,"p5|p6",images/uncle1.jpg,Vishal's eldest brother.
+p10,Uncle,Agarwal,1967-08-15,,M,false,,,"p5|p6",images/uncle2.jpg,Vishal's second brother.
+p11,Aunt,Agarwal,1971-05-20,,F,false,,,"p5|p6",images/aunt.jpg,Vishal's sister.
+p12,Uncle,Agarwal,1969-11-12,,M,false,,,"p5|p6",images/uncle3.jpg,Vishal's third brother.
+p13,Uncle,Sharma,1978-09-05,,M,true,p14,p15,"p7|p8",images/uncle-maternal.jpg,Nupur's younger brother.
+p14,Aunt,Sharma,1980-03-15,,F,true,p13,p15,,images/aunt-maternal.jpg,Nupur's younger sister in law.
+p15,Kid,Sharma,2012-03-15,,M,false,,,"p13|p14",images/kid.jpg,Nupur's younger brother's son.
+
