@@ -43,16 +43,29 @@ function renderTree(data) {
   // Helper: Get generation level (0 = oldest generation)
   function getGenerationLevel(person, memo = {}) {
     if (memo[person.id] !== undefined) return memo[person.id];
-    if (!person.parents || person.parents.length === 0) {
-      memo[person.id] = 0;
-      return 0;
+    
+    // If person has parents, calculate based on parents
+    if (person.parents && person.parents.length > 0) {
+      const parentLevels = person.parents.map(pid => {
+        const parent = idToNode[pid];
+        return parent ? getGenerationLevel(parent, memo) : -1;
+      });
+      memo[person.id] = Math.max(...parentLevels) + 1;
+      return memo[person.id];
     }
-    const parentLevels = person.parents.map(pid => {
-      const parent = idToNode[pid];
-      return parent ? getGenerationLevel(parent, memo) : -1;
-    });
-    memo[person.id] = Math.max(...parentLevels) + 1;
-    return memo[person.id];
+    
+    // If no parents but has a spouse, use spouse's generation
+    if (person.spouse) {
+      const spouse = idToNode[person.spouse];
+      if (spouse && spouse.parents && spouse.parents.length > 0) {
+        memo[person.id] = getGenerationLevel(spouse, memo);
+        return memo[person.id];
+      }
+    }
+    
+    // Default to generation 0 (root)
+    memo[person.id] = 0;
+    return 0;
   }
   
   // Organize people by generation
@@ -330,6 +343,41 @@ function renderTree(data) {
     }
     
     currentX += familyWidth + FAMILY_UNIT_SPACING;
+  });
+  
+  // Position any unpositioned people who are in couples (e.g., spouses without parents in tree)
+  Object.keys(couplesByLevel).forEach(level => {
+    if (parseInt(level) === 0) return; // Skip root level
+    
+    couplesByLevel[level].forEach(couple => {
+      const pos1 = nodePositions[couple.person1.id];
+      const pos2 = nodePositions[couple.person2.id];
+      
+      // If one partner is positioned but the other isn't, position the missing one
+      if (pos1 && !pos2) {
+        // Position person2 next to person1
+        const newX = pos1.x + COUPLE_SPACING;
+        nodePositions[couple.person2.id] = { x: newX, y: pos1.y };
+        positionedPeople.add(couple.person2.id);
+        nodes.push({
+          data: couple.person2,
+          x: newX,
+          y: pos1.y,
+          level: parseInt(level)
+        });
+      } else if (pos2 && !pos1) {
+        // Position person1 next to person2
+        const newX = pos2.x - COUPLE_SPACING;
+        nodePositions[couple.person1.id] = { x: newX, y: pos2.y };
+        positionedPeople.add(couple.person1.id);
+        nodes.push({
+          data: couple.person1,
+          x: newX,
+          y: pos2.y,
+          level: parseInt(level)
+        });
+      }
+    });
   });
   
   // Adjust positions for non-root couples to bring them closer together
