@@ -611,15 +611,8 @@ function renderTree(data) {
     .attr("ry", 8);
   
   // Profile photo
-  nodeGroups
+  const imageElements = nodeGroups
     .append("image")
-    .attr("xlink:href", d => {
-      if (d.data.picture) return d.data.picture;
-      // Use gender-specific animated avatars from DiceBear API
-      return d.data.sex === "M" 
-        ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${d.data.id}&gender=male`
-        : `https://api.dicebear.com/7.x/avataaars/svg?seed=${d.data.id}&gender=female`;
-    })
     .attr("width", CARD_WIDTH)
     .attr("height", PHOTO_HEIGHT)
     .attr("x", -CARD_WIDTH / 2)
@@ -627,6 +620,27 @@ function renderTree(data) {
     .attr("clip-path", d => `url(#clip-${d.data.id})`)
     .style("cursor", "pointer")
     .on("click", (event, d) => showMemberModal(d.data));
+
+  // Set image source with fallback to default images
+  imageElements.each(function(d) {
+    const element = d3.select(this);
+    const defaultImage = d.data.sex === "M" ? "images/man.png" : "images/woman.png";
+    
+    if (d.data.picture) {
+      // Try to load the custom picture, fallback to default if it fails
+      const img = new Image();
+      img.onload = function() {
+        element.attr("xlink:href", d.data.picture);
+      };
+      img.onerror = function() {
+        element.attr("xlink:href", defaultImage);
+      };
+      img.src = d.data.picture;
+    } else {
+      // No picture specified, use default
+      element.attr("xlink:href", defaultImage);
+    }
+  });
   
   // Name text
   nodeGroups.append("text")
