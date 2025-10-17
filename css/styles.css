@@ -1,22 +1,44 @@
+#tree-container {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
 #tree-container svg {
     width: 100%;
     height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .node circle {
-    fill: #86b7fe;
-    stroke: #1a73e8;
-    stroke-width: 2px;
+    fill: #ffffff;
+    stroke: #9b59b6;
+    stroke-width: 4px;
+    cursor: pointer;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+    transition: all 0.3s ease;
+}
+
+.node circle:hover {
+    fill: #f3e5f5;
+    stroke: #8e44ad;
+    stroke-width: 5px;
+    filter: drop-shadow(0 6px 12px rgba(155, 89, 182, 0.3));
+    transform: scale(1.05);
 }
 
 .node text {
-    font-size: 12px;
     fill: #333;
     text-anchor: middle;
 }
 
 .link {
     fill: none;
-    stroke: #ccc;
-    stroke-width: 2px;
+    stroke: #9b59b6;
+    stroke-width: 3px;
+    stroke-linecap: round;
+}
+
+.heart {
+    cursor: default;
+    user-select: none;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
