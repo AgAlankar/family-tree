@@ -1,0 +1,60 @@
+[
+    {
+        "id": "p1",
+        "firstName": "Alankar",
+        "lastName": "Agarwal",
+        "dob": "2002-06-05",
+        "sex": "M",
+        "married": false,
+        "children": [],
+        "parents": [
+            "p2",
+            "p3"
+        ],
+        "picture": "images/alankar.jpg",
+        "notes": "Creator of the family tree."
+    },
+    {
+        "id": "p2",
+        "firstName": "Nupur",
+        "lastName": "Agrawal",
+        "dob": "1974-01-24",
+        "sex": "F",
+        "married": true,
+        "children": [
+            "p1"
+        ],
+        "parents": [],
+        "picture": "images/nupur.jpg",
+        "notes": "Mother of the family."
+    },
+    {
+        "id": "p3",
+        "firstName": "Vishal",
+        "lastName": "Agarwal",
+        "dob": "1973-01-17",
+        "sex": "M",
+        "married": true,
+        "children": [
+            "p1"
+        ],
+        "parents": [],
+        "picture": "images/vishal.jpg",
+        "notes": "Father of the family."
+    },
+    {
+        "id": "p4",
+        "firstName": "Smriti",
+        "lastName": "Agarwal",
+        "dob": "2005-05-06",
+        "sex": "F",
+        "married": false,
+        "children": [],
+        "parents": [
+            "p2",
+            "p3"
+        ],
+        "picture": "images/smriti.jpg",
+        "notes": "Daughter of the family."
+    }
+]
